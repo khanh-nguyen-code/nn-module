@@ -51,7 +51,7 @@ def train(
 
     loss_func = nn.CrossEntropyLoss()
     optimizer_func = optimizer(module.parameters())
-    for epoch in range(1, 30 + 1):
+    for epoch in range(1, 100 + 1):
         module.train()
         module.zero_grad()
 
@@ -103,14 +103,14 @@ if __name__ == "__main__":
             NeuralODE(
                 ode_func=TimeIndependentODEFunc(
                     module=MLP(
-                        dim_list=[28 * 28, 256, 256, 28 * 28],
+                        dim_list=[28 * 28, 512, 512, 28 * 28],
                         activation=nn.Tanh,
                     )
                 ),
                 t_list=torch.tensor([0.0, 0.1]),
                 ode_int_options={
-                    "rtol": 1e-5,
-                    "atol": 1e-7,
+                    "rtol": 1e-7,
+                    "atol": 1e-9,
                     "method": "euler",
                 }
             ),
