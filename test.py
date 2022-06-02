@@ -75,7 +75,7 @@ if __name__ == "__main__":
             dim_list=[28 * 28, 512, 512, 512, 10],
             activation=nn.ReLU,
         ),
-        optimizer=lambda params: optim.Adam(params, lr=1e-3),
+        optimizer=lambda params: optim.SGD(params, lr=1e-3),
     )
 
     train(
@@ -95,7 +95,7 @@ if __name__ == "__main__":
                 out_features=10,
             )
         ),
-        optimizer=lambda params: optim.Adam(params, lr=1e-3),
+        optimizer=lambda params: optim.SGD(params, lr=1e-3),
     )
 
     train(
@@ -119,5 +119,5 @@ if __name__ == "__main__":
                 out_features=10,
             )
         ),
-        optimizer=lambda params: optim.Adam(params, lr=1e-3),
+        optimizer=lambda params: optim.SGD(params, lr=1e-3),
     )
