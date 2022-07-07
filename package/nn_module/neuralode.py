@@ -30,13 +30,9 @@ class NeuralODE(Module):
         :param ode_func: f(t, y)
         """
         super().__init__()
-        if adjoint:
-            self.ode_int = torchdiffeq.odeint_adjoint
-        else:
-            self.ode_int = torchdiffeq.odeint
-
         self.register_module("ode_func", ode_func)
         self.register_buffer("t_list", t_list)
+        self.adjoint = adjoint
         self.ode_int_options = {}
         if ode_int_options is not None:
             self.ode_int_options.update(ode_int_options)
@@ -46,5 +42,10 @@ class NeuralODE(Module):
 
     def integrate(self, y0: torch.Tensor) -> torch.Tensor:
         self.ode_func.on_before_integration(y0, self.t_list)
-        y_list = self.ode_int(self.ode_func, y0, self.t_list, **self.ode_int_options)
+        if self.adjoint:
+            ode_int = torchdiffeq.odeint_adjoint
+        else:
+            ode_int = torchdiffeq.odeint
+
+        y_list = ode_int(self.ode_func, y0, self.t_list, **self.ode_int_options)
         return y_list

@@ -51,7 +51,8 @@ def train(
 
     loss_func = nn.CrossEntropyLoss()
     optimizer_func = optimizer(module.parameters())
-    for epoch in range(1, 100 + 1):
+    num_epochs = 100
+    for epoch in range(1, num_epochs + 1):
         module.train()
         module.zero_grad()
 
@@ -60,7 +61,8 @@ def train(
         loss.backward()
         optimizer_func.step()
         loss_value = float(loss.detach().cpu().numpy())
-        print(f"epoch {epoch}, loss {loss_value}, accuracy {decode(X_test, y_test)}")
+        if epoch == num_epochs:
+            print(f"epoch {epoch}, loss {loss_value}, accuracy {decode(X_test, y_test)}")
 
 
 if __name__ == "__main__":
@@ -80,18 +82,38 @@ if __name__ == "__main__":
 
     train(
         module=nn.Sequential(
+            nn.Linear(
+                in_features=28 * 28,
+                out_features=256,
+            ),
             ResNet(
                 MLP(
-                    dim_list=[28 * 28, 256, 28 * 28],
-                    activation=nn.ReLU,
+                    dim_list=[256, 256, 256],
+                    activation=nn.Tanh,
                 ),
                 MLP(
-                    dim_list=[28 * 28, 256, 28 * 28],
-                    activation=nn.ReLU,
+                    dim_list=[256, 256, 256],
+                    activation=nn.Tanh,
+                ),
+                MLP(
+                    dim_list=[256, 256, 256],
+                    activation=nn.Tanh,
+                ),
+                MLP(
+                    dim_list=[256, 256, 256],
+                    activation=nn.Tanh,
+                ),
+                MLP(
+                    dim_list=[256, 256, 256],
+                    activation=nn.Tanh,
+                ),
+                MLP(
+                    dim_list=[256, 256, 256],
+                    activation=nn.Tanh,
                 )
             ),
             nn.Linear(
-                in_features=28 * 28,
+                in_features=256,
                 out_features=10,
             )
         ),
@@ -100,10 +122,14 @@ if __name__ == "__main__":
 
     train(
         module=nn.Sequential(
+            nn.Linear(
+                in_features=28 * 28,
+                out_features=512,
+            ),
             NeuralODE(
                 ode_func=TimeIndependentODEFunc(
                     module=MLP(
-                        dim_list=[28 * 28, 512, 512, 28 * 28],
+                        dim_list=[512, 512, 512],
                         activation=nn.Tanh,
                     )
                 ),
@@ -111,11 +137,11 @@ if __name__ == "__main__":
                 ode_int_options={
                     "rtol": 1e-7,
                     "atol": 1e-9,
-                    "method": "euler",
+                    "method": "implicit_adams",
                 }
             ),
             nn.Linear(
-                in_features=28 * 28,
+                in_features=512,
                 out_features=10,
             )
         ),
