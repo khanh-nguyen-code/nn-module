@@ -27,7 +27,7 @@ class TimeIndependentODEFunc(ODEFunc):
 
 def train(
         module: nn.Module,
-        optimizer: Callable[[Iterable[nn.Parameter]], optim.Optimizer],
+        optimizer_func: Callable[[Iterable[nn.Parameter]], optim.Optimizer],
         device: torch.device = torch.device("cpu"),
 ):
     dataset = torchvision.datasets.MNIST("./data/", download=True)
@@ -35,7 +35,7 @@ def train(
     X, y = X.to(device).to(torch.float32), y.to(device)
     module.to(device)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.01)
 
     def decode(X: torch.Tensor, y_actual: torch.Tensor) -> float:
         module.eval()
@@ -50,7 +50,7 @@ def train(
     print(f"model size {module_size(module)}")
 
     loss_func = nn.CrossEntropyLoss()
-    optimizer_func = optimizer(module.parameters())
+    optimizer = optimizer_func(module.parameters())
     num_epochs = 100
     for epoch in range(1, num_epochs + 1):
         module.train()
@@ -59,9 +59,9 @@ def train(
         y_pred = module.forward(X_train)
         loss = loss_func.forward(y_pred, y_train)
         loss.backward()
-        optimizer_func.step()
-        loss_value = float(loss.detach().cpu().numpy())
+        optimizer.step()
         if epoch == num_epochs:
+            loss_value = float(loss.detach().cpu().numpy())
             print(f"epoch {epoch}, loss {loss_value}, accuracy {decode(X_test, y_test)}")
 
 
@@ -77,7 +77,7 @@ if __name__ == "__main__":
             dim_list=[28 * 28, 512, 512, 512, 10],
             activation=nn.ReLU,
         ),
-        optimizer=lambda params: optim.SGD(params, lr=1e-3),
+        optimizer_func=lambda params: optim.Adam(params, lr=1e-3),
     )
 
     train(
@@ -117,7 +117,7 @@ if __name__ == "__main__":
                 out_features=10,
             )
         ),
-        optimizer=lambda params: optim.SGD(params, lr=1e-3),
+        optimizer_func=lambda params: optim.Adam(params, lr=1e-3),
     )
 
     train(
@@ -145,5 +145,5 @@ if __name__ == "__main__":
                 out_features=10,
             )
         ),
-        optimizer=lambda params: optim.SGD(params, lr=1e-3),
+        optimizer_func=lambda params: optim.Adam(params, lr=1e-3),
     )
